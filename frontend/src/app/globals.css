@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #222222;
+  --background: #ffffff;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide horizontal scrollbar on the category row */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Smooth pop-in for popovers / dropdowns */
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.pop { animation: popIn 0.16s ease-out; }
+
+/* WHEN panel is horizontally centered — keep its pop-in without fighting the
+   -translate-x-1/2 transform used for centering. */
+@keyframes popInCentered {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+.pop.-translate-x-1\/2 { animation: popInCentered 0.16s ease-out; }

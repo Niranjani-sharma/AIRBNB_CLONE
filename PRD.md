@@ -142,7 +142,7 @@ Heart toggle on cards; persisted per user with a unique `(user_id, listing_id)` 
 |---|---|
 | Payments | Mock checkout ("Reserve" confirms instantly); no real gateway |
 | Messaging (guest↔host) | "Coming Soon" placeholder |
-| Real-time map w/ live pins | Static/basic map (lat/lng modeled); interactive map is a bonus |
+| Real-time map w/ live pins | Interactive map implemented (Leaflet + OpenStreetMap, listing pins) |
 | Identity verification | "Coming Soon" placeholder |
 
 ---
@@ -307,8 +307,8 @@ Browser → Next.js (Server Components fetch public listing data directly from t
 | High | Responsive design (mobile/tablet/desktop) | Implemented |
 | High | Leave a review after a completed stay | Implemented (server-gated) |
 | Med | Superhost badges / ratings aggregation | Implemented (denormalized aggregate + badge) |
-| Med | Interactive map with listing pins | Future (lat/lng modeled; static map now) |
-| Low | Dark mode | Future |
+| Med | Interactive map with listing pins | Implemented (Leaflet + OpenStreetMap; single-pin on detail, price pins on results) |
+| Low | Dark mode | Implemented (class-based theme toggle, persisted; CSS-variable tokens) |
 | Low | Image upload to cloud storage | Future (URL input now) |
 
 ---

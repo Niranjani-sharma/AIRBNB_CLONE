@@ -13,7 +13,7 @@ import {
   startOfDay,
   startOfMonth,
 } from "date-fns";
-import type { DateRange } from "@/lib/types";
+import type { BookedRange } from "@/lib/types";
 
 const iso = (d: Date) => format(d, "yyyy-MM-dd");
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -28,7 +28,7 @@ export default function AvailabilityCalendar({
   checkOut,
   onChange,
 }: {
-  booked: DateRange[];
+  booked: BookedRange[];
   checkIn: string;
   checkOut: string;
   onChange: (checkIn: string, checkOut: string) => void;
@@ -80,7 +80,7 @@ export default function AvailabilityCalendar({
   const canGoPrev = isAfter(firstDay, startOfMonth(today));
 
   return (
-    <div className="rounded-lg border border-border p-3">
+    <div className="rounded-lg border border-line p-3">
       <div className="mb-2 flex items-center justify-between">
         <button
           onClick={() => canGoPrev && setView(addMonths(view, -1))}
@@ -99,7 +99,7 @@ export default function AvailabilityCalendar({
           ›
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-foggy">
+      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">
         {WEEKDAYS.map((w) => (
           <div key={w}>{w}</div>
         ))}
@@ -119,9 +119,9 @@ export default function AvailabilityCalendar({
               aria-label={format(d, "PPP")}
               className={[
                 "aspect-square rounded-md text-xs transition",
-                disabled ? "cursor-not-allowed text-gray-300 line-through" : "hover:bg-gray-100",
-                selected ? "bg-rausch text-white hover:bg-rausch" : "",
-                inRange(d) && !selected ? "bg-rausch/10" : "",
+                disabled ? "cursor-not-allowed text-muted line-through" : "hover:bg-bg-soft",
+                selected ? "bg-brand text-white hover:bg-brand" : "",
+                inRange(d) && !selected ? "bg-brand/10" : "",
               ].join(" ")}
             >
               {format(d, "d")}

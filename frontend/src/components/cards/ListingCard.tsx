@@ -18,7 +18,7 @@ export default function ListingCard({ listing }: { listing: ListingCardType }) {
   };
 
   return (
-    <Link href={`/listings/${listing.id}`} className="group block">
+    <Link href={`/rooms/${listing.id}`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-xl bg-bg-soft">
         {listing.coverPhoto && (
           <Image

@@ -31,7 +31,7 @@ export default function ReviewForm({ listingId }: { listingId: number }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mt-4 rounded-lg border border-border px-4 py-2 text-sm hover:shadow-pill"
+        className="mt-4 rounded-lg border border-line px-4 py-2 text-sm hover:shadow-pill"
       >
         Write a review
       </button>
@@ -39,13 +39,13 @@ export default function ReviewForm({ listingId }: { listingId: number }) {
   }
 
   return (
-    <div className="mt-4 space-y-2 rounded-card border border-border p-4">
-      <label className="block text-sm text-foggy">
+    <div className="mt-4 space-y-2 rounded-card border border-line p-4">
+      <label className="block text-sm text-muted">
         Rating
         <select
           value={rating}
           onChange={(e) => setRating(Number(e.target.value))}
-          className="ml-2 rounded border border-border p-1"
+          className="ml-2 rounded border border-line p-1"
         >
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
@@ -59,11 +59,11 @@ export default function ReviewForm({ listingId }: { listingId: number }) {
         onChange={(e) => setComment(e.target.value)}
         placeholder="Share your experience…"
         rows={3}
-        className="w-full rounded-lg border border-border p-2 text-sm"
+        className="w-full rounded-lg border border-line p-2 text-sm"
       />
       <button
         onClick={submit}
-        className="rounded-lg bg-rausch px-4 py-2 text-sm font-medium text-white"
+        className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white"
       >
         Post review
       </button>

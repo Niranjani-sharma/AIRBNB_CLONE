@@ -40,6 +40,8 @@ export interface ListingCard {
   ratingCount: number;
   coverPhoto: string | null;
   maxGuests: number;
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface ListingDetail extends ListingCard {
   description: string;
@@ -48,8 +50,6 @@ export interface ListingDetail extends ListingCard {
   bedrooms: number;
   beds: number;
   bathrooms: number;
-  latitude: number | null;
-  longitude: number | null;
   amenities: string[];
   photos: Photo[];
   host: HostBrief;
@@ -106,18 +106,3 @@ export interface Availability {
   listingId: number;
   booked: BookedRange[];
 }
-
-// --- legacy aliases (kept until each page is migrated in §7 order) ---
-export type UserDTO = User;
-export type PhotoDTO = Photo;
-export type HostBriefDTO = HostBrief;
-export type ListingCardDTO = ListingCard;
-export type ListingDetailDTO = ListingDetail;
-export type ListingListResponse = ListingPage;
-export type PriceQuoteDTO = Quote;
-export type BookingDTO = Booking;
-export type ReviewDTO = Review;
-export type WishlistItemDTO = WishlistItem;
-export type DateRange = BookedRange;
-export type AvailabilityDTO = Availability;
-export type BookingStatus = Booking["status"];

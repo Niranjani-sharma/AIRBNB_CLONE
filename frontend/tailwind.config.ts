@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,26 +9,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // --- the design brief §4 design tokens (authoritative) ---
+        // Brand stays constant across themes.
         brand: "#FF385C",
         "brand-dark": "#E31C5F",
-        ink: "#222222",
-        muted: "#717171",
-        line: "#DDDDDD",
-        "line-soft": "#EBEBEB",
-        bg: "#FFFFFF",
-        "bg-soft": "#F7F7F7",
 
-        // --- legacy aliases (kept until each page is migrated in §7 order) ---
-        rausch: "#FF385C",
-        "rausch-dark": "#E31C5F",
-        babu: "#00A699",
-        foggy: "#717171",
-        hof: "#222222",
-        border: "#DDDDDD",
+        // Neutral tokens are CSS variables (channel triplets) so they flip in
+        // dark mode automatically — see globals.css :root / .dark.
+        bg: "rgb(var(--bg) / <alpha-value>)",
+        "bg-soft": "rgb(var(--bg-soft) / <alpha-value>)",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        "line-soft": "rgb(var(--line-soft) / <alpha-value>)",
       },
       backgroundImage: {
-        // brand-gradient for primary CTAs (Reserve / Search / Confirm)
         "brand-gradient":
           "linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%)",
       },

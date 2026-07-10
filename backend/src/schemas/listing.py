@@ -79,6 +79,8 @@ class ListingCard(CamelModel):
     rating_count: int
     cover_photo: str | None
     max_guests: int
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class ListingDetail(ListingCard):
@@ -88,8 +90,6 @@ class ListingDetail(ListingCard):
     bedrooms: int
     beds: int
     bathrooms: float
-    latitude: float | None
-    longitude: float | None
     amenities: list[str]
     photos: list[PhotoOut]
     host: HostBrief

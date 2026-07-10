@@ -4,23 +4,22 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import type { AvailabilityDTO, DateRange, ListingDetailDTO, PriceQuoteDTO } from "@/lib/types";
-import { formatMoney } from "@/lib/format";
+import type { Availability, BookedRange, ListingDetail, Quote } from "@/lib/types";
+import { formatMoney } from "@/lib/money";
 import AvailabilityCalendar from "@/components/booking/AvailabilityCalendar";
 
-export default function BookingCard({ listing }: { listing: ListingDetailDTO }) {
+export default function BookingCard({ listing }: { listing: ListingDetail }) {
   const router = useRouter();
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(1);
-  const [booked, setBooked] = useState<DateRange[]>([]);
-  const [quote, setQuote] = useState<PriceQuoteDTO | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [booked, setBooked] = useState<BookedRange[]>([]);
+  const [quote, setQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
     api
       .get(`/listings/${listing.id}/availability`)
-      .then((r) => setBooked((r.data as AvailabilityDTO).booked ?? []))
+      .then((r) => setBooked((r.data as Availability).booked ?? []))
       .catch(() => setBooked([]));
   }, [listing.id]);
 
@@ -44,47 +43,36 @@ export default function BookingCard({ listing }: { listing: ListingDetailDTO }) 
     };
   }, [checkIn, checkOut, guests, listing.id]);
 
-  const reserve = async () => {
+  // Reserve routes to the mocked checkout ("Confirm and pay"); the booking is
+  // created there via POST /bookings.
+  const reserve = () => {
     if (!getToken()) {
       toast.error("Log in to book");
       router.push("/login");
       return;
     }
-    try {
-      setLoading(true);
-      await api.post("/bookings", {
-        listingId: listing.id,
-        checkIn,
-        checkOut,
-        guestsCount: guests,
-      });
-      toast.success("Booking confirmed!");
-      router.push("/trips");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setLoading(false);
-    }
+    const params = new URLSearchParams({ check_in: checkIn, check_out: checkOut, guests: String(guests) });
+    router.push(`/book/${listing.id}?${params.toString()}`);
   };
 
-  const box = "rounded-lg border border-border px-3 py-2";
+  const box = "rounded-lg border border-line px-3 py-2";
 
   return (
-    <div className="sticky top-28 rounded-2xl border border-border p-6 shadow-[0_6px_20px_rgba(0,0,0,0.12)]">
+    <div className="sticky top-28 rounded-2xl border border-line p-6 shadow-[0_6px_20px_rgba(0,0,0,0.12)]">
       <p className="mb-4 flex items-baseline gap-1">
         <span className="text-2xl font-semibold">{formatMoney(listing.pricePerNight)}</span>
-        <span className="text-foggy">night</span>
+        <span className="text-muted">night</span>
       </p>
 
       {/* Selected-dates summary in Airbnb's two-box style */}
-      <div className="mb-3 grid grid-cols-2 overflow-hidden rounded-lg border border-border">
-        <div className="border-r border-border px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase text-hof">Check-in</p>
-          <p className="text-sm text-foggy">{checkIn || "Add date"}</p>
+      <div className="mb-3 grid grid-cols-2 overflow-hidden rounded-lg border border-line">
+        <div className="border-r border-line px-3 py-2">
+          <p className="text-[10px] font-semibold uppercase text-ink">Check-in</p>
+          <p className="text-sm text-muted">{checkIn || "Add date"}</p>
         </div>
         <div className="px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase text-hof">Checkout</p>
-          <p className="text-sm text-foggy">{checkOut || "Add date"}</p>
+          <p className="text-[10px] font-semibold uppercase text-ink">Checkout</p>
+          <p className="text-sm text-muted">{checkOut || "Add date"}</p>
         </div>
       </div>
 
@@ -99,7 +87,7 @@ export default function BookingCard({ listing }: { listing: ListingDetailDTO }) 
       />
 
       <label className={`mt-3 flex flex-col ${box}`}>
-        <span className="text-[10px] font-semibold uppercase text-hof">Guests</span>
+        <span className="text-[10px] font-semibold uppercase text-ink">Guests</span>
         <input
           type="number"
           min={1}
@@ -112,12 +100,12 @@ export default function BookingCard({ listing }: { listing: ListingDetailDTO }) 
 
       <button
         onClick={reserve}
-        disabled={loading || !quote}
-        className="mt-4 w-full rounded-lg bg-rausch py-3 font-semibold text-white transition hover:bg-rausch-dark disabled:opacity-50"
+        disabled={!quote}
+        className="mt-4 w-full rounded-lg bg-brand-gradient py-3 font-semibold text-white transition hover:brightness-95 disabled:opacity-50"
       >
-        {loading ? "Reserving…" : "Reserve"}
+        Reserve
       </button>
-      <p className="mt-2 text-center text-xs text-foggy">You won&apos;t be charged yet</p>
+      <p className="mt-2 text-center text-xs text-muted">You won&apos;t be charged yet</p>
 
       {quote && (
         <div className="mt-5 space-y-3 text-sm">
@@ -128,7 +116,7 @@ export default function BookingCard({ listing }: { listing: ListingDetailDTO }) 
           <Row label="Cleaning fee" value={formatMoney(quote.cleaningFee)} />
           <Row label="Service fee" value={formatMoney(quote.serviceFee)} />
           <Row label="Taxes" value={formatMoney(quote.taxes)} />
-          <div className="border-t border-border pt-3">
+          <div className="border-t border-line pt-3">
             <Row label="Total" value={formatMoney(quote.total)} bold />
           </div>
         </div>
@@ -139,9 +127,9 @@ export default function BookingCard({ listing }: { listing: ListingDetailDTO }) 
 
 function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
-    <div className={`flex justify-between ${bold ? "font-semibold text-hof" : "text-foggy"}`}>
+    <div className={`flex justify-between ${bold ? "font-semibold text-ink" : "text-muted"}`}>
       <span className={bold ? "" : "underline decoration-transparent"}>{label}</span>
-      <span className="text-hof">{value}</span>
+      <span className="text-ink">{value}</span>
     </div>
   );
 }

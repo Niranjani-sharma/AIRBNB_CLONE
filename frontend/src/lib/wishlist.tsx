@@ -9,7 +9,7 @@ import {
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import type { WishlistItemDTO } from "@/lib/types";
+import type { WishlistItem } from "@/lib/types";
 
 // App-wide wishlist state so a card's heart reflects the user's saved listings
 // on every page (not just after a manual click). Loaded once from the API.
@@ -27,7 +27,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (!getToken()) return;
     api
       .get("/wishlist")
-      .then((r) => setSaved(new Set((r.data as WishlistItemDTO[]).map((w) => w.listing.id))))
+      .then((r) => setSaved(new Set((r.data as WishlistItem[]).map((w) => w.listing.id))))
       .catch(() => {
         /* not logged in / no wishlist */
       });

@@ -4,16 +4,19 @@ import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useAuthModal } from "@/lib/auth-modal";
 import { useToast } from "@/lib/toast-context";
 import SearchBar from "@/components/search/SearchBar";
 import CompactSearchPill from "@/components/search/CompactSearchPill";
 import NavTabs from "@/components/home/NavTabs";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
   const { user, logout, switchRole } = useAuth();
+  const authModal = useAuthModal();
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -45,7 +48,7 @@ export default function Header() {
       const u = await switchRole();
       const nowHost = u.role === "host";
       toast.success(nowHost ? "You're now in hosting mode" : "You're now in travelling mode");
-      router.push(nowHost ? "/host/dashboard" : "/");
+      router.push(nowHost ? "/hosting/listings" : "/");
       router.refresh();
     } catch (e: any) {
       toast.error(e.message);
@@ -90,13 +93,14 @@ export default function Header() {
               {roleLabel}
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              onClick={() => authModal.open("signup")}
               className="hidden rounded-pill px-4 py-2 text-sm font-medium hover:bg-bg-soft md:block"
             >
               Become a host
-            </Link>
+            </button>
           )}
+          <ThemeToggle className="hidden md:flex" />
           <button
             aria-label="Choose language"
             className="hidden h-10 w-10 items-center justify-center rounded-full text-base hover:bg-bg-soft md:flex"
@@ -114,7 +118,7 @@ export default function Header() {
               <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M2 4h12M2 8h12M2 12h12" strokeLinecap="round" />
               </svg>
-              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-ink text-sm font-medium text-white">
+              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-ink text-sm font-medium text-bg">
                 {user?.avatarUrl ? (
                   <Image src={user.avatarUrl} alt={user.name} width={32} height={32} className="h-8 w-8 object-cover" />
                 ) : user ? (
@@ -134,11 +138,11 @@ export default function Header() {
                   {user ? (
                     <>
                       <div className="px-4 py-2 text-sm font-semibold text-ink">Hi, {user.name.split(" ")[0]}</div>
-                      <Link href="/wishlist" onClick={close} className={item}>Wishlists</Link>
+                      <Link href="/wishlists" onClick={close} className={item}>Wishlists</Link>
                       <Link href="/trips" onClick={close} className={item}>Trips</Link>
                       <button onClick={soon} className={item}>Messages</button>
                       {user.role === "host" && (
-                        <Link href="/host/dashboard" onClick={close} className={item}>Host dashboard</Link>
+                        <Link href="/hosting/listings" onClick={close} className={item}>Host dashboard</Link>
                       )}
                       <div className="my-1 border-t border-line-soft" />
                       <button onClick={soon} className={item}>Account settings</button>
@@ -149,11 +153,11 @@ export default function Header() {
                     </>
                   ) : (
                     <>
-                      <Link href="/signup" onClick={close} className={`${item} font-semibold`}>Sign up</Link>
-                      <Link href="/login" onClick={close} className={item}>Log in</Link>
+                      <button onClick={() => { close(); authModal.open("signup"); }} className={`${item} font-semibold`}>Sign up</button>
+                      <button onClick={() => { close(); authModal.open("login"); }} className={item}>Log in</button>
                       <div className="my-1 border-t border-line-soft" />
                       <button onClick={soon} className={item}>Help Centre</button>
-                      <Link href="/login" onClick={close} className={item}>Become a host</Link>
+                      <button onClick={() => { close(); authModal.open("signup"); }} className={item}>Become a host</button>
                     </>
                   )}
                 </div>

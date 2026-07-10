@@ -31,6 +31,8 @@ def listing_card(listing: Listing) -> ListingCard:
         rating_count=listing.rating_count,
         cover_photo=_cover(listing),
         max_guests=listing.max_guests,
+        latitude=listing.latitude,
+        longitude=listing.longitude,
     )
 
 
@@ -43,8 +45,6 @@ def listing_detail(listing: Listing) -> ListingDetail:
         bedrooms=listing.bedrooms,
         beds=listing.beds,
         bathrooms=listing.bathrooms,
-        latitude=listing.latitude,
-        longitude=listing.longitude,
         amenities=[a.name for a in listing.amenities],
         photos=[
             PhotoOut(id=p.id, url=p.url, sort_order=p.sort_order, is_cover=p.is_cover)

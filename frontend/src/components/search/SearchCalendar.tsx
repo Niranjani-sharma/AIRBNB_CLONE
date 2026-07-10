@@ -37,7 +37,7 @@ function Month({
   return (
     <div className="w-[280px]">
       <p className="mb-3 text-center text-sm font-semibold">{format(month, "MMMM yyyy")}</p>
-      <div className="grid grid-cols-7 text-center text-[11px] text-foggy">
+      <div className="grid grid-cols-7 text-center text-[11px] text-muted">
         {WEEKDAYS.map((w, i) => (
           <div key={i}>{w}</div>
         ))}
@@ -55,9 +55,9 @@ function Month({
               disabled={past}
               onClick={() => onPick(d)}
               className={`aspect-square rounded-full text-xs transition ${
-                past ? "cursor-not-allowed text-gray-300 line-through" : "hover:bg-gray-100"
-              } ${selected ? "bg-hof text-white hover:bg-hof" : ""} ${
-                inRange(d) && !selected ? "bg-gray-100" : ""
+                past ? "cursor-not-allowed text-muted line-through" : "hover:bg-bg-soft"
+              } ${selected ? "bg-ink text-bg hover:bg-ink" : ""} ${
+                inRange(d) && !selected ? "bg-bg-soft" : ""
               }`}
             >
               {format(d, "d")}
@@ -95,7 +95,7 @@ export default function SearchCalendar({
   };
 
   const canPrev = isAfter(startOfMonth(view), startOfMonth(today));
-  const arrow = "flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-gray-100 disabled:opacity-30";
+  const arrow = "flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-bg-soft disabled:opacity-30";
 
   return (
     <div className="relative flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-8">

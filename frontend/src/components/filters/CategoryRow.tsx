@@ -21,7 +21,7 @@ export default function CategoryRow() {
     const params = new URLSearchParams(sp.toString());
     active === value ? params.delete("property_type") : params.set("property_type", value);
     params.set("page", "1");
-    router.push(`/?${params.toString()}`);
+    router.push(`/s?${params.toString()}`);
   };
 
   return (
@@ -34,8 +34,8 @@ export default function CategoryRow() {
             onClick={() => select(c.value)}
             className={`group flex min-w-[64px] flex-col items-center gap-2 whitespace-nowrap border-b-2 pb-3 pt-1 transition ${
               isActive
-                ? "border-hof text-hof"
-                : "border-transparent text-foggy hover:border-gray-300 hover:text-hof"
+                ? "border-ink text-ink"
+                : "border-transparent text-muted hover:border-line hover:text-ink"
             }`}
           >
             <span className={`text-[28px] transition ${isActive ? "" : "opacity-70 group-hover:opacity-100"}`} aria-hidden>

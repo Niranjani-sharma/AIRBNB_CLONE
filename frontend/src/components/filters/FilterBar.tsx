@@ -49,7 +49,7 @@ export default function FilterBar() {
     params.delete("amenities");
     amenities.forEach((a) => params.append("amenities", a));
     params.set("page", "1");
-    router.push(`/?${params.toString()}`);
+    router.push(`/s?${params.toString()}`);
     setOpen(false);
   };
 
@@ -61,7 +61,7 @@ export default function FilterBar() {
     setMaxPrice("");
     setSort("newest");
     setAmenities([]);
-    router.push(`/?${params.toString()}`);
+    router.push(`/s?${params.toString()}`);
     setOpen(false);
   };
 
@@ -69,11 +69,11 @@ export default function FilterBar() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex shrink-0 items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm hover:shadow-pill"
+        className="flex shrink-0 items-center gap-2 rounded-lg border border-line px-4 py-2 text-sm hover:shadow-pill"
       >
         <span aria-hidden>⚙</span> Filters
         {activeCount > 0 && (
-          <span className="rounded-full bg-hof px-2 text-xs text-white">{activeCount}</span>
+          <span className="rounded-full bg-ink px-2 text-xs text-bg">{activeCount}</span>
         )}
       </button>
 
@@ -83,7 +83,7 @@ export default function FilterBar() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-card bg-white p-6"
+            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-card bg-bg p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -101,16 +101,16 @@ export default function FilterBar() {
                 placeholder="Min $"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full rounded-lg border border-border p-2 text-sm"
+                className="w-full rounded-lg border border-line p-2 text-sm"
               />
-              <span className="text-foggy">–</span>
+              <span className="text-muted">–</span>
               <input
                 type="number"
                 min={0}
                 placeholder="Max $"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full rounded-lg border border-border p-2 text-sm"
+                className="w-full rounded-lg border border-line p-2 text-sm"
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function FilterBar() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="mb-6 w-full rounded-lg border border-border p-2 text-sm"
+              className="mb-6 w-full rounded-lg border border-line p-2 text-sm"
             >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -135,8 +135,8 @@ export default function FilterBar() {
                   onClick={() => toggleAmenity(a)}
                   className={`rounded-pill border px-3 py-1 text-sm ${
                     amenities.includes(a)
-                      ? "border-hof bg-hof text-white"
-                      : "border-border text-foggy hover:border-hof"
+                      ? "border-ink bg-ink text-bg"
+                      : "border-line text-muted hover:border-ink"
                   }`}
                 >
                   {a}
@@ -144,13 +144,13 @@ export default function FilterBar() {
               ))}
             </div>
 
-            <div className="flex items-center justify-between border-t border-border pt-4">
+            <div className="flex items-center justify-between border-t border-line pt-4">
               <button onClick={clear} className="text-sm font-medium underline">
                 Clear all
               </button>
               <button
                 onClick={apply}
-                className="rounded-lg bg-rausch px-6 py-2 text-sm font-medium text-white"
+                className="rounded-lg bg-brand px-6 py-2 text-sm font-medium text-white"
               >
                 Show results
               </button>

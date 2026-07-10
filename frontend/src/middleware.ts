@@ -18,5 +18,5 @@ export function middleware(request: NextRequest) {
 
 // Browsing the explore grid + listing detail stays public.
 export const config = {
-  matcher: ["/login", "/signup", "/trips", "/wishlist", "/host/:path*"],
+  matcher: ["/login", "/signup", "/trips", "/wishlists", "/book/:path*", "/hosting/:path*"],
 };

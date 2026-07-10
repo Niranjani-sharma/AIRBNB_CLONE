@@ -27,12 +27,12 @@ function Stepper({
   min?: number;
 }) {
   const btn =
-    "flex h-8 w-8 items-center justify-center rounded-full border border-foggy text-lg text-foggy transition hover:border-hof hover:text-hof disabled:opacity-30";
+    "flex h-8 w-8 items-center justify-center rounded-full border border-muted text-lg text-muted transition hover:border-ink hover:text-ink disabled:opacity-30";
   return (
     <div className="flex items-center justify-between py-4">
       <div>
-        <p className="font-medium text-hof">{label}</p>
-        <p className="text-sm text-foggy">{hint}</p>
+        <p className="font-medium text-ink">{label}</p>
+        <p className="text-sm text-muted">{hint}</p>
       </div>
       <div className="flex items-center gap-3">
         <button className={btn} onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`Decrease ${label}`}>
@@ -73,41 +73,41 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
     if (guests > 0) p.set("guests", String(guests));
     p.set("page", "1");
     setOpen(null);
-    router.push(`/?${p.toString()}`);
+    router.push(`/s?${p.toString()}`);
   };
 
   const seg = (id: Panel, label: string, value: string, filled: boolean, extra = "") =>
     `flex flex-col justify-center rounded-full px-6 py-2.5 text-left transition ${extra} ${
-      open === id ? "bg-white shadow-pill" : "hover:bg-gray-200/60"
+      open === id ? "bg-bg shadow-pill" : "hover:bg-bg-soft/60"
     }`;
 
-  const valueClass = (filled: boolean) => `truncate text-sm ${filled ? "text-hof" : "text-foggy"}`;
+  const valueClass = (filled: boolean) => `truncate text-sm ${filled ? "text-ink" : "text-muted"}`;
 
   return (
     <div className="relative">
       <div
-        className={`flex items-center rounded-pill border border-border transition ${
-          open ? "bg-gray-100" : "bg-white"
+        className={`flex items-center rounded-pill border border-line transition ${
+          open ? "bg-bg-soft" : "bg-bg"
         } ${compact ? "shadow-pill" : "shadow-card"}`}
       >
         <button className={seg("where", "", "", false)} onClick={() => setOpen(open === "where" ? null : "where")}>
-          <span className="text-[11px] font-semibold text-hof">Where</span>
+          <span className="text-[11px] font-semibold text-ink">Where</span>
           <span className={valueClass(!!location)}>{location || "Search destinations"}</span>
         </button>
-        <span className="h-8 w-px bg-border" />
+        <span className="h-8 w-px bg-line" />
         <button className={seg("when", "", "", false)} onClick={() => setOpen(open === "when" ? null : "when")}>
-          <span className="text-[11px] font-semibold text-hof">When</span>
+          <span className="text-[11px] font-semibold text-ink">When</span>
           <span className={valueClass(!!(checkIn && checkOut))}>{dateLabel}</span>
         </button>
-        <span className="h-8 w-px bg-border" />
+        <span className="h-8 w-px bg-line" />
         <button className={seg("who", "", "", false, "flex-1")} onClick={() => setOpen(open === "who" ? null : "who")}>
-          <span className="text-[11px] font-semibold text-hof">Who</span>
+          <span className="text-[11px] font-semibold text-ink">Who</span>
           <span className={valueClass(guests > 0)}>{guestLabel}</span>
         </button>
         <button
           onClick={submit}
           aria-label="Search"
-          className="mx-1.5 flex h-11 items-center gap-2 rounded-full bg-rausch px-3.5 font-medium text-white transition hover:bg-rausch-dark"
+          className="mx-1.5 flex h-11 items-center gap-2 rounded-full bg-brand px-3.5 font-medium text-white transition hover:bg-brand-dark"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="3">
             <circle cx="11" cy="11" r="7" />
@@ -121,15 +121,15 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
 
       {/* WHERE */}
       {open === "where" && (
-        <div className="pop absolute left-0 top-[calc(100%+12px)] z-50 max-h-[60vh] w-[380px] overflow-y-auto rounded-3xl border border-border bg-white p-5 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
+        <div className="pop absolute left-0 top-[calc(100%+12px)] z-50 max-h-[60vh] w-[380px] overflow-y-auto rounded-3xl border border-line bg-bg p-5 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
           <input
             autoFocus
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Search destinations"
-            className="mb-4 w-full rounded-lg border border-border p-3 text-sm outline-none focus:border-hof"
+            className="mb-4 w-full rounded-lg border border-line p-3 text-sm outline-none focus:border-ink"
           />
-          <p className="mb-2 text-xs font-semibold uppercase text-foggy">Suggested destinations</p>
+          <p className="mb-2 text-xs font-semibold uppercase text-muted">Suggested destinations</p>
           <ul>
             {DESTINATIONS.filter((d) => d.toLowerCase().includes(location.toLowerCase())).map((d) => (
               <li key={d}>
@@ -138,9 +138,9 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
                     setLocation(d);
                     setOpen("when");
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition hover:bg-gray-100"
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition hover:bg-bg-soft"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100" aria-hidden>📍</span>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-bg-soft" aria-hidden>📍</span>
                   {d}
                 </button>
               </li>
@@ -151,7 +151,7 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
 
       {/* WHEN */}
       {open === "when" && (
-        <div className="pop absolute left-1/2 top-[calc(100%+12px)] z-50 w-[92vw] max-w-[640px] -translate-x-1/2 rounded-3xl border border-border bg-white p-6 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
+        <div className="pop absolute left-1/2 top-[calc(100%+12px)] z-50 w-[92vw] max-w-[640px] -translate-x-1/2 rounded-3xl border border-line bg-bg p-6 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
           <SearchCalendar
             checkIn={checkIn}
             checkOut={checkOut}
@@ -166,8 +166,8 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
 
       {/* WHO */}
       {open === "who" && (
-        <div className="pop absolute right-0 top-[calc(100%+12px)] z-50 w-[380px] rounded-3xl border border-border bg-white px-6 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
-          <div className="divide-y divide-border">
+        <div className="pop absolute right-0 top-[calc(100%+12px)] z-50 w-[380px] rounded-3xl border border-line bg-bg px-6 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
+          <div className="divide-y divide-line">
             <Stepper label="Adults" hint="Ages 13 or above" value={adults} onChange={setAdults} min={1} />
             <Stepper label="Children" hint="Ages 2–12" value={children} onChange={setChildren} />
             <Stepper label="Infants" hint="Under 2" value={infants} onChange={setInfants} />

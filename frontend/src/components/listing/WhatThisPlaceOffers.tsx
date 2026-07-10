@@ -21,11 +21,11 @@ const ICONS: Record<string, string> = {
 export default function WhatThisPlaceOffers({ amenities }: { amenities: string[] }) {
   if (amenities.length === 0) return null;
   return (
-    <section className="border-b border-border py-8">
+    <section className="border-b border-line py-8">
       <h2 className="mb-5 text-xl font-semibold">What this place offers</h2>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {amenities.map((a) => (
-          <li key={a} className="flex items-center gap-4 text-hof">
+          <li key={a} className="flex items-center gap-4 text-ink">
             <span className="text-xl" aria-hidden>
               {ICONS[a] ?? "✔️"}
             </span>

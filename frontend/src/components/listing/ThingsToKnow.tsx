@@ -21,13 +21,13 @@ export default function ThingsToKnow({ maxGuests }: { maxGuests: number }) {
   ];
 
   return (
-    <section className="border-t border-border py-8">
+    <section className="border-t border-line py-8">
       <h2 className="mb-5 text-xl font-semibold">Things to know</h2>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className="mb-3 font-medium text-hof">{col.title}</h3>
-            <ul className="space-y-2 text-sm text-foggy">
+            <h3 className="mb-3 font-medium text-ink">{col.title}</h3>
+            <ul className="space-y-2 text-sm text-muted">
               {col.items.map((it) => (
                 <li key={it}>{it}</li>
               ))}

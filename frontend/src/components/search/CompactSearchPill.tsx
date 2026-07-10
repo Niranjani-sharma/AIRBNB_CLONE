@@ -16,14 +16,14 @@ export default function CompactSearchPill({ onClick }: { onClick: () => void }) 
   return (
     <button
       onClick={onClick}
-      className="pop flex items-center gap-3 rounded-pill border border-border bg-white py-2 pl-5 pr-2 text-sm font-medium shadow-pill transition hover:shadow-card"
+      className="pop flex items-center gap-3 rounded-pill border border-line bg-bg py-2 pl-5 pr-2 text-sm font-medium shadow-pill transition hover:shadow-card"
     >
-      <span className="text-hof">{location}</span>
-      <span className="h-5 w-px bg-border" />
-      <span className="text-hof">{dates}</span>
-      <span className="h-5 w-px bg-border" />
-      <span className="text-foggy">{who}</span>
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rausch text-white">
+      <span className="text-ink">{location}</span>
+      <span className="h-5 w-px bg-line" />
+      <span className="text-ink">{dates}</span>
+      <span className="h-5 w-px bg-line" />
+      <span className="text-muted">{who}</span>
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3">
           <circle cx="11" cy="11" r="7" />
           <path d="M21 21l-4.3-4.3" strokeLinecap="round" />

@@ -9,26 +9,26 @@ const COLUMNS: { title: string; links: string[] }[] = [
 
 export default function Footer() {
   return (
-    <footer className="mt-12 border-t border-border bg-gray-50">
+    <footer className="mt-12 border-t border-line bg-bg-soft">
       <div className="mx-auto max-w-content px-6 py-10 md:px-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="mb-3 text-sm font-semibold text-hof">{col.title}</h3>
-              <ul className="space-y-2 text-sm text-foggy">
+              <h3 className="mb-3 text-sm font-semibold text-ink">{col.title}</h3>
+              <ul className="space-y-2 text-sm text-muted">
                 {col.links.map((l) => (
                   <li key={l}>
-                    <span className="cursor-pointer hover:text-hof hover:underline">{l}</span>
+                    <span className="cursor-pointer hover:text-ink hover:underline">{l}</span>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-border pt-6 text-sm text-foggy md:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-line pt-6 text-sm text-muted md:flex-row">
           <p>© 2026 StayFinder · A student portfolio clone (not affiliated with Airbnb)</p>
           <p className="flex items-center gap-2">
-            <span className="font-medium text-rausch">stayfinder</span> · Built with Next.js &amp; FastAPI
+            <span className="font-medium text-brand">stayfinder</span> · Built with Next.js &amp; FastAPI
           </p>
         </div>
       </div>

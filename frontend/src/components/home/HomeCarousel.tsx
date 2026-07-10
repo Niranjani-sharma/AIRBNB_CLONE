@@ -1,7 +1,7 @@
 "use client";
 import { useRef } from "react";
 import ListingCard from "@/components/cards/ListingCard";
-import type { ListingCardDTO } from "@/lib/types";
+import type { ListingCard as ListingCardType } from "@/lib/types";
 
 // A titled, horizontally-scrollable row of listing cards with prev/next arrows —
 // the "Popular homes in …" pattern from Airbnb's landing page.
@@ -10,7 +10,7 @@ export default function HomeCarousel({
   listings,
 }: {
   title: string;
-  listings: ListingCardDTO[];
+  listings: ListingCardType[];
 }) {
   const ref = useRef<HTMLDivElement>(null);
   if (!listings.length) return null;
@@ -18,12 +18,12 @@ export default function HomeCarousel({
   const scroll = (dir: number) =>
     ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.85, behavior: "smooth" });
 
-  const arrow = "flex h-8 w-8 items-center justify-center rounded-full border border-border text-lg hover:shadow-pill";
+  const arrow = "flex h-8 w-8 items-center justify-center rounded-full border border-line text-lg hover:shadow-pill";
 
   return (
     <section className="py-4">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-hof">{title}</h2>
+        <h2 className="text-xl font-semibold text-ink">{title}</h2>
         <div className="hidden gap-2 sm:flex">
           <button onClick={() => scroll(-1)} aria-label="Scroll left" className={arrow}>
             ‹

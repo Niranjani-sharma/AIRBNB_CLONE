@@ -2,18 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Neutral design tokens as channel triplets (r g b) so Tailwind's
+   rgb(var(--x) / <alpha-value>) opacity modifiers work. Flip in .dark. */
 :root {
-  --foreground: #222222;
-  --background: #ffffff;
+  --bg: 255 255 255;
+  --bg-soft: 247 247 247;
+  --ink: 34 34 34;
+  --muted: 113 113 113;
+  --line: 221 221 221;
+  --line-soft: 235 235 235;
+}
+.dark {
+  --bg: 18 18 20;
+  --bg-soft: 30 30 34;
+  --ink: 240 240 242;
+  --muted: 161 161 170;
+  --line: 56 56 61;
+  --line-soft: 42 42 47;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: rgb(var(--ink));
+  background: rgb(var(--bg));
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Visible keyboard focus (§8 quality floor) */
+:focus-visible {
+  outline: 2px solid rgb(var(--ink));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Hide horizontal scrollbar on the category row */

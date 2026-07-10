@@ -1,6 +1,15 @@
-// Lightweight static map (OpenStreetMap embed — no API key required).
-// Coordinates are modeled on the listing; a live interactive map with pins is a
-// documented bonus/future item.
+"use client";
+import dynamic from "next/dynamic";
+
+// Interactive map (Leaflet + OpenStreetMap tiles, no API key). Loaded client-side
+// only since Leaflet needs the DOM.
+const InteractiveMap = dynamic(() => import("./InteractiveMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full animate-pulse bg-bg-soft motion-reduce:animate-none" />
+  ),
+});
+
 export default function LocationMap({
   lat,
   lng,
@@ -11,19 +20,13 @@ export default function LocationMap({
   label: string;
 }) {
   if (lat == null || lng == null) return null;
-  const d = 0.03;
-  const bbox = `${lng - d},${lat - d},${lng + d},${lat + d}`;
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
   return (
     <section className="mb-8">
       <h2 className="mb-3 text-lg font-semibold">Where you&apos;ll be</h2>
-      <iframe
-        src={src}
-        title={`Map showing ${label}`}
-        loading="lazy"
-        className="h-72 w-full rounded-card border border-border"
-      />
-      <p className="mt-2 text-xs text-foggy">{label} · approximate location</p>
+      <div className="h-72 w-full overflow-hidden rounded-2xl border border-line">
+        <InteractiveMap points={[{ id: 0, lat, lng }]} center={[lat, lng]} zoom={13} />
+      </div>
+      <p className="mt-2 text-xs text-muted">{label} · approximate location</p>
     </section>
   );
 }

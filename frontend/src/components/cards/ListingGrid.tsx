@@ -1,11 +1,11 @@
 import ListingCard from "@/components/cards/ListingCard";
-import type { ListingCardDTO } from "@/lib/types";
+import type { ListingCard as ListingCardType } from "@/lib/types";
 
-export default function ListingGrid({ listings }: { listings: ListingCardDTO[] }) {
+export default function ListingGrid({ listings }: { listings: ListingCardType[] }) {
   if (!listings.length) {
     return (
-      <div className="py-24 text-center text-foggy">
-        <p className="text-lg font-medium text-hof">No stays match your search</p>
+      <div className="py-24 text-center text-muted">
+        <p className="text-lg font-medium text-ink">No stays match your search</p>
         <p className="mt-1">Try adjusting your dates or filters.</p>
       </div>
     );

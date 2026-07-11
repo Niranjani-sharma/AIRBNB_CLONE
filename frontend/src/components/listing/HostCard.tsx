@@ -1,3 +1,4 @@
+import { formatRating } from "@/lib/rating";
 import Image from "next/image";
 import type { HostBrief } from "@/lib/types";
 
@@ -35,7 +36,7 @@ export default function HostCard({
             </div>
             <div>
               <p className="text-lg font-semibold">
-                {ratingAvg != null ? ratingAvg.toFixed(2) : "New"} ★
+                {ratingAvg != null ? formatRating(ratingAvg) : "New"} ★
               </p>
               <p className="text-[11px] text-muted">Rating</p>
             </div>

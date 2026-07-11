@@ -26,6 +26,20 @@ body {
   background: rgb(var(--bg));
 }
 
+/* Form controls: keep typed text readable and placeholders visible in BOTH
+   themes (inputs don't inherit color, so on dark fields the browser defaults
+   are near-invisible). --muted is a light grey in dark mode (~#A1A1AA). */
+input,
+textarea,
+select {
+  color: rgb(var(--ink));
+}
+input::placeholder,
+textarea::placeholder {
+  color: rgb(var(--muted));
+  opacity: 1;
+}
+
 html {
   scroll-behavior: smooth;
 }

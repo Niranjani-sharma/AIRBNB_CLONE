@@ -26,7 +26,8 @@ class Settings:
     TAX_RATE: float = float(os.getenv("TAX_RATE", "0.06"))
 
     # --- CORS -------------------------------------------------------------
-    # Comma-separated list of allowed frontend origins.
+    # Comma-separated list of allowed frontend origins (set to your Vercel URL
+    # in production).
     CORS_ORIGINS: list[str] = [
         o.strip()
         for o in os.getenv(
@@ -36,6 +37,11 @@ class Settings:
         ).split(",")
         if o.strip()
     ]
+    # Also allow Vercel preview deployments (their subdomains change per build).
+    CORS_ORIGIN_REGEX: str = os.getenv("CORS_ORIGIN_REGEX", r"https://.*\.vercel\.app")
+
+    # --- Seed on startup (demo hosts with ephemeral disks, e.g. Render free) --
+    SEED_ON_START: bool = os.getenv("SEED_ON_START", "true").lower() in ("1", "true", "yes")
 
 
 @lru_cache

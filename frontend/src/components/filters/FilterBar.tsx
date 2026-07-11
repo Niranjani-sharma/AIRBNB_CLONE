@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // Composable refine controls (price range + amenities + sort). Everything is
 // reflected in the URL query params so filters compose with search/category and
-// the grid is filtered server-side. Prices are entered in dollars, stored/sent
+// the grid is filtered server-side. Prices are entered in rupees, stored/sent
 // as cents to match the API.
 const AMENITIES = [
   "WiFi", "Kitchen", "Pool", "Hot tub", "Free parking", "Air conditioning",
@@ -24,9 +24,10 @@ export default function FilterBar() {
   const sp = useSearchParams();
   const [open, setOpen] = useState(false);
 
-  const centsToDollars = (v: string | null) => (v ? String(Number(v) / 100) : "");
-  const [minPrice, setMinPrice] = useState(centsToDollars(sp.get("min_price")));
-  const [maxPrice, setMaxPrice] = useState(centsToDollars(sp.get("max_price")));
+  // Values shown/entered in rupees; the API stores/filters in cents.
+  const centsToRupees = (v: string | null) => (v ? String(Number(v) / 100) : "");
+  const [minPrice, setMinPrice] = useState(centsToRupees(sp.get("min_price")));
+  const [maxPrice, setMaxPrice] = useState(centsToRupees(sp.get("max_price")));
   const [sort, setSort] = useState(sp.get("sort") || "newest");
   const [amenities, setAmenities] = useState<string[]>(sp.getAll("amenities"));
 
@@ -41,10 +42,10 @@ export default function FilterBar() {
 
   const apply = () => {
     const params = new URLSearchParams(sp.toString());
-    const dollarsToCents = (v: string) => (v ? String(Math.round(Number(v) * 100)) : "");
+    const rupeesToCents = (v: string) => (v ? String(Math.round(Number(v) * 100)) : "");
     const set = (k: string, v: string) => (v ? params.set(k, v) : params.delete(k));
-    set("min_price", dollarsToCents(minPrice));
-    set("max_price", dollarsToCents(maxPrice));
+    set("min_price", rupeesToCents(minPrice));
+    set("max_price", rupeesToCents(maxPrice));
     set("sort", sort !== "newest" ? sort : "");
     params.delete("amenities");
     amenities.forEach((a) => params.append("amenities", a));
@@ -95,30 +96,36 @@ export default function FilterBar() {
 
             <h3 className="mb-2 text-sm font-medium">Price range (per night)</h3>
             <div className="mb-6 flex items-center gap-3">
-              <input
-                type="number"
-                min={0}
-                placeholder="Min $"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full rounded-lg border border-line p-2 text-sm"
-              />
+              <div className="flex w-full items-center rounded-lg border border-line px-2">
+                <span className="text-sm text-muted">₹</span>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Min"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="w-full bg-transparent p-2 text-sm text-ink outline-none"
+                />
+              </div>
               <span className="text-muted">–</span>
-              <input
-                type="number"
-                min={0}
-                placeholder="Max $"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full rounded-lg border border-line p-2 text-sm"
-              />
+              <div className="flex w-full items-center rounded-lg border border-line px-2">
+                <span className="text-sm text-muted">₹</span>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Max"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="w-full bg-transparent p-2 text-sm text-ink outline-none"
+                />
+              </div>
             </div>
 
             <h3 className="mb-2 text-sm font-medium">Sort by</h3>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="mb-6 w-full rounded-lg border border-line p-2 text-sm"
+              className="mb-6 w-full rounded-lg border border-line bg-bg p-2 text-sm text-ink"
             >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>

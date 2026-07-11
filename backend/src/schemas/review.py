@@ -17,6 +17,7 @@ class ReviewOut(CamelModel):
     id: int
     listing_id: int
     author_name: str
+    author_avatar: str | None = None
     rating: int
     comment: str
     created_at: dt.datetime

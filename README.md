@@ -188,14 +188,43 @@ Any user can toggle between guest and host from the header ("Switch to hosting")
 
 ---
 
-## Deployment
+## Deployment (Vercel + Render)
 
-- **Frontend → Vercel:** import `frontend/`, set `NEXT_PUBLIC_API_URL` to your deployed
-  backend URL (with `/api`).
-- **Backend → Render / Railway:** start command `uvicorn main:app --host 0.0.0.0 --port $PORT`;
-  set `SECRET_KEY` and `CORS_ORIGINS` (your frontend origin). Run `python seed.py` once to
-  populate data. For persistence across restarts, mount a volume for `airbnb.db` (or point
-  `DATABASE_URL` at a managed database).
+Deploy the **backend first** (so you have its URL for the frontend), then the frontend,
+then point CORS back at the frontend.
+
+### 1) Backend → Render
+
+A blueprint is included at [`render.yaml`](./render.yaml). In the Render dashboard:
+**New → Blueprint → select this repo**. It provisions a free web service with:
+
+- **Root dir:** `backend` · **Build:** `pip install -r requirements.txt`
+- **Start:** `uvicorn src.app:app --host 0.0.0.0 --port $PORT` · **Health check:** `/api/health`
+- **Env vars:** `SECRET_KEY` (auto-generated), `SEED_ON_START=true`, `PYTHON_VERSION=3.12.7`,
+  and `CORS_ORIGINS` (set this after step 2 to your Vercel URL).
+
+On first (empty) boot the app auto-seeds demo data (`SEED_ON_START`), because Render's free
+disk is ephemeral. A non-empty DB is never wiped. For durable data across restarts, add a
+Render **persistent disk** for `airbnb.db` or point `DATABASE_URL` at a managed Postgres.
+
+> No blueprint? Create a **Web Service** manually with the same root dir / build / start
+> commands and env vars.
+
+### 2) Frontend → Vercel
+
+Import the repo, then in the project settings:
+
+- **Root Directory:** `frontend`
+- **Env var:** `NEXT_PUBLIC_API_BASE_URL = https://<your-render-service>.onrender.com/api`
+
+Vercel auto-detects Next.js (build `next build`, no extra config).
+
+### 3) Close the CORS loop
+
+Back in Render, set `CORS_ORIGINS` to your production Vercel origin
+(e.g. `https://your-app.vercel.app`) and redeploy. Vercel **preview** URLs are already
+allowed via `CORS_ORIGIN_REGEX` (`https://.*\.vercel\.app`). Verify with
+`GET https://<render-url>/api/health`.
 
 ---
 

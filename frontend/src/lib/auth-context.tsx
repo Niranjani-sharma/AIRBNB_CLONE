@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { api } from "@/lib/api";
-import { getToken, setToken, clearToken } from "@/lib/auth";
+import { getToken, setToken, clearToken, decodeUserFromToken } from "@/lib/auth";
 import type { Role, User } from "@/lib/types";
 
 // Session source of truth (the design brief §1/§8). Holds the current user + token and
@@ -26,9 +26,19 @@ interface AuthContextValue {
 
 const Ctx = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+// `initialUser` is decoded from the token cookie on the SERVER (root layout) and
+// passed in, so the role is correct on the very first render — no guest→host flash
+// and no hydration mismatch. It's a partial User (role/id/email); GET /users/me
+// then enriches it with name/avatar.
+export function AuthProvider({
+  children,
+  initialUser = null,
+}: {
+  children: React.ReactNode;
+  initialUser?: User | null;
+}) {
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [loading, setLoading] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!getToken()) {
@@ -47,7 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refresh();
+    // Re-seed synchronously from the token in case the client cookie differs from
+    // what SSR saw, then enrich with the full profile. The role is already correct
+    // from `initialUser`, so this never flips the nav.
+    const seeded = decodeUserFromToken(getToken());
+    if (seeded) {
+      setUser((prev) => (prev && prev.id === seeded.id ? prev : seeded));
+      refresh();
+    } else {
+      setUser(null);
+    }
   }, [refresh]);
 
   const login = async (email: string, password: string) => {

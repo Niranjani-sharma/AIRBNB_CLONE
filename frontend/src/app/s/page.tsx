@@ -30,7 +30,7 @@ export default async function SearchPage({
         </div>
       </div>
 
-      <div className="sticky top-[65px] z-30 -mx-6 flex items-center gap-6 border-b border-line bg-bg px-6 pt-3 md:-mx-10 md:px-10">
+      <div className="sticky top-[65px] z-30 -mx-6 flex items-center gap-6 border-b border-line bg-bg px-6 pt-3 md:-mx-10 md:px-10 lg:-mx-20 lg:px-20">
         <div className="min-w-0 flex-1">
           <Suspense fallback={<div className="h-14" />}>
             <CategoryRow />

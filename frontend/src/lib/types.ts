@@ -75,6 +75,7 @@ export interface Booking {
   id: number;
   listingId: number;
   guestId: number;
+  guestName?: string | null;
   checkIn: string;
   checkOut: string;
   guestsCount: number;
@@ -90,6 +91,7 @@ export interface Review {
   id: number;
   listingId: number;
   authorName: string;
+  authorAvatar: string | null;
   rating: number;
   comment: string;
   createdAt: string;

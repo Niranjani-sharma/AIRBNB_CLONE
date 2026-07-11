@@ -6,6 +6,9 @@ would own migrations in a larger project).
 """
 from __future__ import annotations
 
+import os
+import sys
+
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -14,12 +17,43 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import models  # noqa: F401  (registers ORM tables on Base.metadata)
-from .db import Base, engine
+from .db import Base, SessionLocal, engine
 from .routes import auth, bookings, healthcheck, listings, users, wishlist
 from .utils.config import settings
 
 # Create tables on startup (SQLite). For a bigger project you'd use Alembic.
 Base.metadata.create_all(bind=engine)
+
+
+def _seed_if_empty() -> None:
+    """On demo hosts with an ephemeral disk (e.g. Render free tier), the SQLite
+    file is wiped on each cold start. If enabled and the DB has no listings,
+    populate it from seed.py so the deployed app always has data. A DB that
+    already has listings is left untouched."""
+    if not settings.SEED_ON_START:
+        return
+    db = SessionLocal()
+    try:
+        empty = db.query(models.Listing).count() == 0
+    except Exception:
+        empty = True
+    finally:
+        db.close()
+    if not empty:
+        return
+    # seed.py lives at the backend/ root; make sure it's importable.
+    backend_dir = os.path.dirname(os.path.dirname(__file__))
+    if backend_dir not in sys.path:
+        sys.path.insert(0, backend_dir)
+    try:
+        from seed import run as seed_run
+
+        seed_run()
+    except Exception as exc:  # never block startup on a seed failure
+        print(f"[startup] seed skipped: {exc}")
+
+
+_seed_if_empty()
 
 
 def _error_body(status_code: int, message: str, errors: list | None = None) -> dict:
@@ -37,6 +71,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
+        allow_origin_regex=settings.CORS_ORIGIN_REGEX or None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

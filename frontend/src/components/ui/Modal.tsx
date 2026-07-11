@@ -59,7 +59,11 @@ export default function Modal({
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
+      // Close only when the press *starts* directly on the backdrop — never when
+      // a click begins inside the dialog (avoids input clicks closing the modal).
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="presentation"
     >
       <div
@@ -67,7 +71,6 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        onClick={(e) => e.stopPropagation()}
         className={`pop max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-2xl bg-bg shadow-[0_10px_40px_rgba(0,0,0,0.25)]`}
       >
         <div className="relative flex items-center justify-center border-b border-line-soft p-4">

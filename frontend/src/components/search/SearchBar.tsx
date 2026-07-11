@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import SearchCalendar from "./SearchCalendar";
+import { GuestRows, guestSummary, type GuestCounts } from "./GuestSelector";
 
 // Seed cities double as destination suggestions.
 const DESTINATIONS = [
@@ -13,40 +14,6 @@ const DESTINATIONS = [
 
 type Panel = "where" | "when" | "who" | null;
 
-function Stepper({
-  label,
-  hint,
-  value,
-  onChange,
-  min = 0,
-}: {
-  label: string;
-  hint: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-}) {
-  const btn =
-    "flex h-8 w-8 items-center justify-center rounded-full border border-muted text-lg text-muted transition hover:border-ink hover:text-ink disabled:opacity-30";
-  return (
-    <div className="flex items-center justify-between py-4">
-      <div>
-        <p className="font-medium text-ink">{label}</p>
-        <p className="text-sm text-muted">{hint}</p>
-      </div>
-      <div className="flex items-center gap-3">
-        <button className={btn} onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`Decrease ${label}`}>
-          −
-        </button>
-        <span className="w-5 text-center">{value}</span>
-        <button className={btn} onClick={() => onChange(value + 1)} aria-label={`Increase ${label}`}>
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function SearchBar({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -54,16 +21,17 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
   const [location, setLocation] = useState(sp.get("location") || "");
   const [checkIn, setCheckIn] = useState(sp.get("check_in") || "");
   const [checkOut, setCheckOut] = useState(sp.get("check_out") || "");
-  const [adults, setAdults] = useState(Math.max(1, Number(sp.get("guests")) || 1));
-  const [children, setChildren] = useState(0);
-  const [infants, setInfants] = useState(0);
-  const [pets, setPets] = useState(0);
+  const [gc, setGc] = useState<GuestCounts>({
+    adults: Number(sp.get("guests")) || 0,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
 
-  const guests = adults + children;
+  const guests = gc.adults + gc.children;
   const fmt = (s: string) => format(parseISO(s), "d MMM");
   const dateLabel = checkIn && checkOut ? `${fmt(checkIn)} – ${fmt(checkOut)}` : "Add dates";
-  const guestLabel =
-    guests > 0 ? `${guests} guest${guests > 1 ? "s" : ""}${infants ? ` · ${infants} infant${infants > 1 ? "s" : ""}` : ""}` : "Add guests";
+  const guestLabel = guestSummary(gc, "Add guests");
 
   const submit = () => {
     const p = new URLSearchParams();
@@ -166,13 +134,9 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
 
       {/* WHO */}
       {open === "who" && (
-        <div className="pop absolute right-0 top-[calc(100%+12px)] z-50 w-[380px] rounded-3xl border border-line bg-bg px-6 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.15)]">
-          <div className="divide-y divide-line">
-            <Stepper label="Adults" hint="Ages 13 or above" value={adults} onChange={setAdults} min={1} />
-            <Stepper label="Children" hint="Ages 2–12" value={children} onChange={setChildren} />
-            <Stepper label="Infants" hint="Under 2" value={infants} onChange={setInfants} />
-            <Stepper label="Pets" hint="Service animals welcome" value={pets} onChange={setPets} />
-          </div>
+        <div className="pop absolute right-0 top-[calc(100%+12px)] z-50 w-[380px] rounded-2xl border border-line-soft bg-bg px-6 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.18)]">
+          {/* No listing cap in search context → minAdults 0 keeps the "Add guests" empty state */}
+          <GuestRows value={gc} onChange={setGc} minAdults={0} />
         </div>
       )}
     </div>

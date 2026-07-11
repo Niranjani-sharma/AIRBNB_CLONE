@@ -36,6 +36,7 @@ class BookingOut(CamelModel):
     id: int
     listing_id: int
     guest_id: int
+    guest_name: str | None = None
     check_in: dt.date
     check_out: dt.date
     guests_count: int

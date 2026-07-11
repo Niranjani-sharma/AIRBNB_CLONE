@@ -1,0 +1,24 @@
+# Render blueprint for the FastAPI backend.
+# Deploy: Render Dashboard → New → Blueprint → point at this repo.
+# After the frontend is live on Vercel, set CORS_ORIGINS (below) to its URL.
+services:
+  - type: web
+    name: airbnb-clone-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: SECRET_KEY
+        generateValue: true # Render generates a strong random JWT secret
+      - key: SEED_ON_START
+        value: "true" # seed demo data on first (empty) boot
+      # Set this to your deployed Vercel origin, e.g. https://your-app.vercel.app
+      # (comma-separated for multiple). Vercel *preview* URLs are already allowed
+      # via CORS_ORIGIN_REGEX in the app.
+      - key: CORS_ORIGINS
+        sync: false

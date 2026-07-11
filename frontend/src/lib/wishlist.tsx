@@ -16,6 +16,10 @@ import type { WishlistItem } from "@/lib/types";
 interface WishlistCtx {
   isSaved: (id: number) => boolean;
   toggle: (id: number) => Promise<void>;
+  // Seed known-saved ids (e.g. the wishlists page priming from its own fetch) so
+  // saved-state is correct immediately, with no first-paint race against the
+  // provider's own load.
+  markSaved: (ids: number[]) => void;
 }
 
 const Ctx = createContext<WishlistCtx | null>(null);
@@ -48,6 +52,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             n.delete(id);
             return n;
           });
+          toast.success("Removed from wishlist");
         } else {
           await api.post("/wishlist", { listingId: id });
           setSaved((s) => new Set(s).add(id));
@@ -60,8 +65,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     [saved]
   );
 
+  const markSaved = useCallback((ids: number[]) => {
+    setSaved((s) => {
+      const n = new Set(s);
+      ids.forEach((id) => n.add(id));
+      return n;
+    });
+  }, []);
+
   return (
-    <Ctx.Provider value={{ isSaved: (id) => saved.has(id), toggle }}>
+    <Ctx.Provider value={{ isSaved: (id) => saved.has(id), toggle, markSaved }}>
       {children}
     </Ctx.Provider>
   );

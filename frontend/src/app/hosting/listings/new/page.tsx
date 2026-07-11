@@ -1,4 +1,5 @@
-import HostListingForm from "@/components/HostListingForm";
+import ListingWizard from "@/components/host/ListingWizard";
+
 export default function NewListing() {
-  return <HostListingForm />;
+  return <ListingWizard />;
 }

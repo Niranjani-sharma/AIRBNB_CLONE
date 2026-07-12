@@ -1,254 +1,182 @@
-# StayFinder — Airbnb Clone
+# StayFinder
 
-A functional clone of the Airbnb marketplace: browse and search stays, view listing
-details, filter by criteria, book date ranges with availability enforcement, and manage
-your own listings as a host — in a photo-forward UI that resembles Airbnb.
+An Airbnb-style booking app I built for the SDE Fullstack assignment. You can browse and
+search stays, open a listing, filter results, book a date range (with availability checks so
+you can't double-book), and switch into host mode to manage your own listings. The UI is meant
+to feel like Airbnb.
 
-- **Frontend:** Next.js 14 (App Router, TypeScript) + Tailwind CSS
-- **Backend:** Python + FastAPI
-- **Database:** SQLite (SQLAlchemy 2.0 ORM), self-designed relational schema
+**Live demo**
+- App: https://stayfinder-phi-jet.vercel.app
+- API: https://airbnb-clone-api-obpg.onrender.com/api
+- API docs (Swagger): https://airbnb-clone-api-obpg.onrender.com/docs
+- Code: https://github.com/Niranjani-sharma/AIRBNB_CLONE  <!-- replace with your exact repo URL -->
 
-> **Demo:** _add your deployed frontend + backend URLs here_
+Note: the backend is on Render's free tier, so if it's been idle the first request can take
+30–45 seconds to wake up. After that it's fast.
 
----
+## Tech stack
 
-## Repository Layout
+- Frontend: Next.js 14 (App Router) with TypeScript and Tailwind
+- Backend: Python with FastAPI
+- Database: SQLite through SQLAlchemy (schema is my own)
+- Auth: JWT, passwords hashed with bcrypt
+
+## What it does
+
+- Home/explore grid with a search bar, category row, and filters (price, property type, amenities)
+- Listing page with a photo gallery, amenities, availability calendar, price breakdown, reviews, host info and a map
+- Booking flow with a mocked checkout; bookings persist and block those dates
+- My Trips, wishlist, and a host side (dashboard + a step-by-step create/edit flow)
+- One account can act as both guest and host by switching roles
+
+## Project structure
 
 ```
 airbnb/
-├── backend/     # FastAPI + SQLite REST API
-├── frontend/    # Next.js (TypeScript) web app
-├── PRD.md       # Product requirements document
-└── README.md    # this file
+├── backend/     FastAPI + SQLite
+├── frontend/    Next.js app
+└── README.md
 ```
 
-### Backend layout (layered, one file per resource)
+The backend is split by resource. Routes stay thin and hand off to controllers; the ORM models
+live in `models/`, request/response shapes in `schemas/`, and the shared logic (pricing,
+availability, auth helpers) sits in `utils/`. Pricing and availability are done on the server so
+the client never makes up its own totals.
 
-```
-backend/
-├── main.py                 # entrypoint: `uvicorn main:app`
-├── seed.py                 # deterministic seed (drops & recreates tables)
-├── requirements.txt
-└── src/
-    ├── app.py              # app factory: CORS, routers, error envelope
-    ├── routes/             # thin routers (path + deps -> controller)
-    ├── controllers/        # business logic per resource
-    ├── middlewares/        # FastAPI dependencies (auth guards)
-    ├── models/             # SQLAlchemy ORM tables (one file per table)
-    ├── schemas/            # Pydantic DTOs (camelCase I/O)
-    ├── db/                 # engine / session / Base
-    └── utils/              # ApiError, ApiResponse, constants, config,
-                            #   security, pricing, availability, serializers
-```
+## Running it locally
 
-Request flow: **route → controller → (service in `utils` / serializer) → ORM model**.
-Auth guards live in `middlewares/`; pricing and availability are the single
-server-side source of truth in `utils/`.
+You'll need Python 3.11+ and Node 18+. Run the backend and frontend in two terminals.
 
----
-
-## Architecture
-
-Two independently deployable services communicating over HTTP/JSON.
-
-```
-Browser
-  │
-  ▼
-Next.js (frontend/)
-  • Server Components fetch public listing data for first paint
-  • Client Components call the API via an axios client that
-    attaches the JWT as a Bearer header
-  │  HTTP  (NEXT_PUBLIC_API_URL, e.g. http://localhost:8000/api)
-  ▼
-FastAPI (backend/)  →  SQLAlchemy  →  SQLite (airbnb.db)
-  • Thin routers → controllers → services (pricing, availability) → ORM models
-  • Pricing & availability are server-authored (single source of truth)
-  • Every response uses a standard envelope (see API Overview)
-```
-
-**Key decisions:** money is stored as **integer cents**; the API emits **camelCase** so the
-TypeScript frontend stays idiomatic; **pricing** lives in one module used by both the quote
-endpoint and the booking transaction; **availability** is derived from bookings and re-checked
-*inside* the booking transaction to prevent double-booking; listing deletes are **soft**
-(`is_active=false`) to preserve booking history.
-
----
-
-## Database Schema
-
-Relational schema (SQLite). Money in integer cents.
-
-| Table | Purpose | Key columns / relationships |
-|---|---|---|
-| `users` | Guests and hosts | `email` unique; `role` (guest\|host); `is_superhost` |
-| `listings` | Properties | `host_id → users`; flat `city/country`; `price_per_night` (cents); `rating_avg/count`; `is_active` |
-| `listing_photos` | Photos per listing | `listing_id → listings`; `sort_order`; `is_cover` |
-| `amenities` | Amenity catalog | `name` unique |
-| `listing_amenities` | Listing ↔ amenity | Many-to-many join table |
-| `bookings` | Reservations | `listing_id`, `guest_id`; `check_in/check_out` (checkout exclusive); cents snapshot; `status` |
-| `reviews` | Post-stay reviews | `listing_id`, `booking_id`, `author_id`; `rating` 1–5 |
-| `wishlists` | Favorites | unique `(user_id, listing_id)` |
-
-**Relationships:** users 1—N listings (host) and 1—N bookings (guest); listings 1—N
-photos/bookings/reviews and N—N amenities; users N—N listings via wishlists.
-
-**Availability / overlap rule:** a requested range `[in, out)` conflicts with an existing
-non-cancelled booking when `existing.check_in < out AND existing.check_out > in`.
-
----
-
-## API Overview
-
-All routes are under `/api`. Responses are camelCase JSON, wrapped in a standard
-envelope so the client always gets a predictable shape:
-
-```jsonc
-// success
-{ "statusCode": 200, "data": { /* payload */ }, "message": "…", "success": true }
-// error
-{ "statusCode": 409, "message": "Those dates are no longer available",
-  "success": false, "errors": [] }
-```
-
-| Method | Path | Auth | Purpose |
-|---|---|---|---|
-| POST | `/api/auth/signup` | — | Create account (auto-login), returns `{token, user}` |
-| POST | `/api/auth/login` | — | Log in, returns `{token, user}` |
-| POST | `/api/auth/logout` | — | Stateless acknowledgment |
-| POST | `/api/auth/switch-role` | ✔ | Toggle guest/host, re-issue token |
-| GET | `/api/users/me` | ✔ | Current user |
-| GET | `/api/listings` | — | Search/filter/paginate |
-| GET | `/api/listings/mine` | host | Your own listings |
-| GET | `/api/listings/{id}` | — | Listing detail |
-| POST | `/api/listings` | host | Create listing |
-| PATCH | `/api/listings/{id}` | owner | Update listing |
-| DELETE | `/api/listings/{id}` | owner | Soft-delete listing |
-| GET | `/api/listings/{id}/availability` | — | Booked date ranges |
-| POST | `/api/listings/{id}/quote` | — | Price breakdown |
-| GET | `/api/listings/{id}/reviews` | — | Reviews |
-| POST | `/api/listings/{id}/reviews` | ✔ | Review (after a completed stay) |
-| GET | `/api/listings/{id}/bookings` | owner | Bookings on a listing |
-| POST | `/api/bookings` | ✔ | Create booking (409 on conflict) |
-| GET | `/api/bookings/me` | ✔ | My Trips |
-| PATCH | `/api/bookings/{id}/cancel` | ✔ | Cancel |
-| GET/POST | `/api/wishlist` | ✔ | List / add favorite |
-| DELETE | `/api/wishlist/{listing_id}` | ✔ | Remove favorite |
-| GET | `/api/health` | — | Liveness |
-
-Interactive API docs are available at `http://localhost:8000/docs` when the backend runs.
-
-### Search / filter query parameters (`GET /api/listings`)
-`location`, `guests`, `min_price` (cents), `max_price` (cents), `property_type`,
-`amenities` (repeatable), `check_in`/`check_out` (ISO dates — excludes listings with an
-overlapping booking), `sort` (`newest|price_asc|price_desc|rating`), `page`, `limit`.
-
----
-
-## Getting Started (Local)
-
-Requires **Python 3.11+** and **Node.js 18+**. Run the two services in separate terminals.
-
-### 1) Backend (FastAPI + SQLite)
+**Backend**
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-cp .env.example .env               # adjust SECRET_KEY etc. if you like
-python seed.py                     # creates airbnb.db and seeds sample data
+cp .env.example .env
+python seed.py                   # creates airbnb.db with sample data
 uvicorn main:app --reload --port 8000
 ```
 
-The API is now at `http://localhost:8000` (docs at `/docs`).
+API runs at http://localhost:8000 (docs at /docs).
 
-### 2) Frontend (Next.js)
+**Frontend**
 
 ```bash
 cd frontend
 npm install
-cp .env.local.example .env.local   # NEXT_PUBLIC_API_URL=http://localhost:8000/api
+cp .env.local.example .env.local # set NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open http://localhost:3000.
 
-### Seed accounts (all password `password123`)
+**Test accounts** (password is `password123` for all):
+
 | Email | Role |
 |---|---|
-| `alice@example.com` | host (Superhost) |
-| `bob@example.com` | host |
-| `carol@example.com` | host |
-| `dave@example.com` | guest |
-| `erin@example.com` | guest |
+| alice@example.com | host (Superhost) |
+| bob@example.com | host |
+| carol@example.com | host |
+| dave@example.com | guest |
+| erin@example.com | guest |
 
-Any user can toggle between guest and host from the header ("Switch to hosting").
+`dave` and `erin` already have past and upcoming bookings, so Trips and the review flow have
+something to show. Any account can switch between guest and host from the header.
 
----
+## Database schema
 
-## Deployment (Vercel + Render)
+Everything's in SQLite. Money is stored as integer cents to avoid float rounding, and formatted
+only when it's shown.
 
-Deploy the **backend first** (so you have its URL for the frontend), then the frontend,
-then point CORS back at the frontend.
+| Table | What it holds |
+|---|---|
+| users | guests and hosts; unique email, role, superhost flag |
+| listings | properties; FK to host, city/country, price in cents, rating average/count, active flag |
+| listing_photos | photos for a listing, with cover + sort order |
+| amenities | amenity names |
+| listing_amenities | join table between listings and amenities (many-to-many) |
+| bookings | check-in/check-out (checkout is exclusive), a price snapshot in cents, status |
+| reviews | rating 1–5 and a comment, tied to a listing/booking/author |
+| wishlists | saved listings, unique per (user, listing) |
 
-### 1) Backend → Render
+A user has many listings (as host) and many bookings (as guest). A listing has many photos,
+bookings and reviews, and many amenities.
 
-A blueprint is included at [`render.yaml`](./render.yaml). In the Render dashboard:
-**New → Blueprint → select this repo**. It provisions a free web service with:
+For availability, I don't keep a separate blocked-dates table — it's derived from the bookings.
+A requested range `[in, out)` clashes with an existing (non-cancelled) booking when
+`existing.check_in < out AND existing.check_out > in`. That check runs inside the booking
+transaction, so two people can't grab the same dates.
 
-- **Root dir:** `backend` · **Build:** `pip install -r requirements.txt`
-- **Start:** `uvicorn src.app:app --host 0.0.0.0 --port $PORT` · **Health check:** `/api/health`
-- **Env vars:** `SECRET_KEY` (auto-generated), `SEED_ON_START=true`, `PYTHON_VERSION=3.12.7`,
-  and `CORS_ORIGINS` (set this after step 2 to your Vercel URL).
+Deleting a listing is a soft delete (`is_active=false`) so existing bookings and history aren't lost.
 
-On first (empty) boot the app auto-seeds demo data (`SEED_ON_START`), because Render's free
-disk is ephemeral. A non-empty DB is never wiped. For durable data across restarts, add a
-Render **persistent disk** for `airbnb.db` or point `DATABASE_URL` at a managed Postgres.
+## API
 
-> No blueprint? Create a **Web Service** manually with the same root dir / build / start
-> commands and env vars.
+Everything lives under `/api`. Responses come back as camelCase JSON wrapped in a small envelope:
 
-### 2) Frontend → Vercel
+```jsonc
+{ "statusCode": 200, "data": { }, "message": "...", "success": true }
+```
 
-Import the repo, then in the project settings:
+Errors use the same shape with `success: false` and a `message`.
 
-- **Root Directory:** `frontend`
-- **Env var:** `NEXT_PUBLIC_API_BASE_URL = https://<your-render-service>.onrender.com/api`
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | /api/auth/signup | — | create account, returns token + user |
+| POST | /api/auth/login | — | log in |
+| POST | /api/auth/logout | — | stateless |
+| POST | /api/auth/switch-role | yes | toggle guest/host, returns a new token |
+| GET | /api/users/me | yes | current user |
+| GET | /api/listings | — | search / filter / paginate |
+| GET | /api/listings/mine | host | your listings |
+| GET | /api/listings/{id} | — | listing detail |
+| POST | /api/listings | host | create |
+| PATCH | /api/listings/{id} | owner | update |
+| DELETE | /api/listings/{id} | owner | soft-delete |
+| GET | /api/listings/{id}/availability | — | booked date ranges |
+| POST | /api/listings/{id}/quote | — | price breakdown |
+| GET | /api/listings/{id}/reviews | — | reviews |
+| POST | /api/listings/{id}/reviews | yes | review (only after a completed stay) |
+| GET | /api/listings/{id}/bookings | owner | bookings on your listing |
+| POST | /api/bookings | yes | book (returns 409 if the dates clash) |
+| GET | /api/bookings/me | yes | my trips |
+| PATCH | /api/bookings/{id}/cancel | yes | cancel |
+| GET / POST | /api/wishlist | yes | list / add |
+| DELETE | /api/wishlist/{listing_id} | yes | remove |
+| GET | /api/health | — | health check |
 
-Vercel auto-detects Next.js (build `next build`, no extra config).
+Search params on `GET /api/listings`: `location`, `guests`, `min_price`, `max_price` (both in
+cents), `property_type`, `amenities` (repeatable), `check_in`/`check_out`, `sort`
+(`newest`, `price_asc`, `price_desc`, `rating`), `page`, `limit`.
 
-### 3) Close the CORS loop
+The easiest way to poke at the API is the Swagger page at `/docs`.
 
-Back in Render, set `CORS_ORIGINS` to your production Vercel origin
-(e.g. `https://your-app.vercel.app`) and redeploy. Vercel **preview** URLs are already
-allowed via `CORS_ORIGIN_REGEX` (`https://.*\.vercel\.app`). Verify with
-`GET https://<render-url>/api/health`.
+## Deployment
 
----
+Backend is on Render, frontend on Vercel. Deploy the backend first so you have its URL, then
+set that as the frontend's API base, then add the frontend origin to the backend's allowed
+CORS origins.
 
-## Assumptions & Limitations
+Backend (Render): root dir `backend`, install `pip install -r requirements.txt`, start
+`uvicorn src.app:app --host 0.0.0.0 --port $PORT`, health check `/api/health`. Env vars:
+`SECRET_KEY`, `CORS_ORIGINS` (the Vercel URL), and `SEED_ON_START=true` so it seeds on first
+boot (Render's free disk is wiped on redeploys; a non-empty DB is left alone). For data that
+survives restarts you'd attach a persistent disk or move to Postgres.
 
-- **Auth is simplified but real.** Passwords are bcrypt-hashed and sessions are stateless
-  JWTs. The token is stored in a readable `token` cookie so the axios client can send it and
-  Next.js middleware can gate protected pages; **all authorization is enforced server-side**.
-  A production build would use httpOnly cookies via a same-site proxy/BFF.
-- **Mocked per the brief:** payment processing (Reserve confirms instantly), guest↔host
-  messaging, identity verification, and a live pricing map (coordinates are modeled; a static
-  map is used).
-- **Availability** is derived from bookings; there is no separate host block-out calendar in
-  the MVP.
-- **Money** is stored as integer cents and formatted only in the UI.
-- **SQLite** is used as specified; the ORM layer means the schema ports to Postgres with
-  minimal changes if needed for scale.
+Frontend (Vercel): root dir `frontend`, set `NEXT_PUBLIC_API_BASE_URL` to the Render URL plus
+`/api`. Vercel picks up Next.js on its own.
 
----
+## Assumptions and what's mocked
 
-## Testing the API
-
-With the backend running (Swagger UI at `/docs`, or FastAPI's `TestClient`), the flows
-you can exercise end-to-end are: health, paginated search, location/price/amenity filters,
-signup/login (+ bad-credential handling), listing detail, price quote, booking creation,
-overlap rejection (409), date validation (422), My Trips, host-only guards (403), ownership
-checks, review gating, and wishlist add/list/remove.
+- Auth is simplified but real: bcrypt-hashed passwords and stateless JWTs. All the actual
+  authorization (host-only routes, "can this user edit this listing") is checked on the server.
+- Mocked, as the brief allows: payments (Reserve just confirms), messaging, identity
+  verification, and the live pricing map (I store lat/lng and show a basic map).
+- Photos are stored as image URLs — there's no file-upload endpoint, so the host form takes URLs.
+- Reviews store one overall rating. The per-category bars and the review tag chips on the
+  listing page are cosmetic and derived from that rating / the review text, not separate data.
+- The "Guest favourite" badge is a UI-only touch shown for highly rated listings.
+- Prices show in ₹ for the demo, but are stored as integer cents internally.
+- SQLite is used as specified. Since it's behind SQLAlchemy, moving to Postgres later wouldn't
+  take much.
